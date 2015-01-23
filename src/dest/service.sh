@@ -47,7 +47,7 @@ set -o xtrace
 # args: path to pid file
 # returns: 0 if pid is running, 1 if not running or if pidfile does not exist.
 _is_running() {
-  /sbin/start-stop-daemon -K -s 0 -x "${python}" -p "${pidfile}" -q
+  /sbin/start-stop-daemon -K -s 0 -x "${daemon}" -p "${pidfile}" -q
 }
 
 start() {
