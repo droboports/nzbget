@@ -29,9 +29,7 @@ Each invocation creates a log file with all the generated output.
 * zlib: http://zlib.net/
 * openssl: https://www.openssl.org/
 * ncurses: https://www.gnu.org/software/ncurses/
-* libsigc++: http://libsigc.sourceforge.net/
 * libxml2: http://xmlsoft.org/
-* libpar2: http://sourceforge.net/projects/parchive/files/libpar2/
 * nzbget: http://nzbget.net/
 
 ## Help support the apps
