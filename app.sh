@@ -1,6 +1,6 @@
 ### UNRAR ###
 _build_unrar() {
-local VERSION="5.1.7"
+local VERSION="5.1.7-fs"
 local FOLDER="unrar"
 local FILE="unrar.tgz"
 local URL="https://github.com/droboports/unrar/releases/download/v${VERSION}/${FILE}"
@@ -12,7 +12,7 @@ cp -v "target/${FOLDER}/bin"/* "${DEST}/libexec/"
 
 ### P7ZIP ###
 _build_p7zip() {
-local VERSION="9.20.1"
+local VERSION="9.20.1-fs"
 local FOLDER="p7zip"
 local FILE="p7zip.tgz"
 local URL="https://github.com/droboports/p7zip/releases/download/v${VERSION}/${FILE}"
@@ -40,7 +40,7 @@ popd
 
 ### OPENSSL ###
 _build_openssl() {
-local OPENSSL_VERSION="1.0.2"
+local OPENSSL_VERSION="1.0.1l"
 local OPENSSL_FOLDER="openssl-${OPENSSL_VERSION}"
 local OPENSSL_FILE="${OPENSSL_FOLDER}.tar.gz"
 local OPENSSL_URL="http://www.openssl.org/source/${OPENSSL_FILE}"
