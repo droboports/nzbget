@@ -40,7 +40,7 @@ popd
 
 ### OPENSSL ###
 _build_openssl() {
-local OPENSSL_VERSION="1.0.1l"
+local OPENSSL_VERSION="1.0.2"
 local OPENSSL_FOLDER="openssl-${OPENSSL_VERSION}"
 local OPENSSL_FILE="${OPENSSL_FOLDER}.tar.gz"
 local OPENSSL_URL="http://www.openssl.org/source/${OPENSSL_FILE}"
@@ -51,7 +51,7 @@ pushd "target/${OPENSSL_FOLDER}"
   --openssldir="${DEST}/etc/ssl" \
   --with-zlib-include="${DEPS}/include" \
   --with-zlib-lib="${DEST}/lib" \
-  shared zlib-dynamic threads linux-armv4 -DL_ENDIAN ${CFLAGS} ${LDFLAGS}
+  shared zlib-dynamic threads linux-armv4 no-asm -DL_ENDIAN ${CFLAGS} ${LDFLAGS}
 sed -i -e "s/-O3//g" Makefile
 make -j1
 make install_sw
