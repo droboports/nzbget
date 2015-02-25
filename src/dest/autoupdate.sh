@@ -30,6 +30,4 @@ export
 rm -vf "${logfolder}/update-${NZBUP_BRANCH}.sh" >&3
 "${prog_dir}/libexec/wget" -O "${logfolder}/update-${NZBUP_BRANCH}.sh" "https://raw.githubusercontent.com/droboports/nzbget/master/src/update-${NZBUP_BRANCH}.sh" >&3
 source "${logfolder}/update-${NZBUP_BRANCH}.sh"
-_auto_update
-
-"Update completed. See ${logfile} for a detailed log." >&3
+_autoupdate
