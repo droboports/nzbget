@@ -27,11 +27,9 @@ set -o xtrace
 
 export
 
-echo rm -vf "${logfolder}/update-${NZBUP_BRANCH}.sh" >&3
-echo "${prog_dir}/libexec/wget" -o "${logfolder}/update-${NZBUP_BRANCH}.sh" "https://raw.githubusercontent.com/droboports/nzbget/master/src/update-${NZBUP_BRANCH}.sh" >&3
-echo source "${logfolder}/update-${NZBUP_BRANCH}.sh" >&3
+rm -vf "${logfolder}/update-${NZBUP_BRANCH}.sh" >&3
+"${prog_dir}/libexec/wget" -o "${logfolder}/update-${NZBUP_BRANCH}.sh" "https://raw.githubusercontent.com/droboports/nzbget/master/src/update-${NZBUP_BRANCH}.sh" >&3
 source "${logfolder}/update-${NZBUP_BRANCH}.sh"
-echo _auto_update >&3
 _auto_update
 
-echo "Update completed. See ${logfile} for a detailed log." >&3
+"Update completed. See ${logfile} for a detailed log." >&3
