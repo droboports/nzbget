@@ -1,14 +1,15 @@
 #!/usr/bin/env sh
 #
-# Nzbget install script
+# Nzbget update script
 
 prog_dir="$(dirname $(realpath ${0}))"
 name="$(basename ${prog_dir})"
-logfile="/tmp/DroboApps/${name}/install.log"
+logfile="/tmp/DroboApps/${name}/update.log"
 
 # script hardening
 set -o errexit  # exit on uncaught error code
 set -o nounset  # exit on unset variable
+set -o pipefail # propagate last error code on pipe
 
 # ensure log folder exists
 if ! grep -q ^tmpfs /proc/mounts; then mount -t tmpfs tmpfs /tmp; fi
@@ -24,12 +25,9 @@ echo $(date +"%Y-%m-%d %H-%M-%S"): ${0} ${@}
 # enable script tracing
 set -o xtrace
 
-# copy default configuration files
-if [[ -n "$(find "${prog_dir}/etc" -maxdepth 1 -name "*.default")" ]]; then
-  for deffile in ${prog_dir}/etc/*.default; do
-    basefile="${prog_dir}/etc/$(basename ${deffile} .default)"
-    if [ ! -f "${basefile}" ]; then
-      cp -v "${deffile}" "${basefile}"
-    fi
-  done
-fi
+export
+
+rm -vf "${logfolder}/update-${NZBUP_BRANCH}.sh" >&3
+"${prog_dir}/libexec/wget" -O "${logfolder}/update-${NZBUP_BRANCH}.sh" "https://raw.githubusercontent.com/droboports/nzbget/master/src/update-${NZBUP_BRANCH}.sh" >&3
+source "${logfolder}/update-${NZBUP_BRANCH}.sh"
+_autoupdate
