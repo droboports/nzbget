@@ -25,9 +25,7 @@ echo $(date +"%Y-%m-%d %H-%M-%S"): ${0} ${@}
 # enable script tracing
 set -o xtrace
 
-export
-
-rm -vf "${logfolder}/update-${NZBUP_BRANCH}.sh" >&3
-"${prog_dir}/libexec/wget" -O "${logfolder}/update-${NZBUP_BRANCH}.sh" "https://raw.githubusercontent.com/droboports/nzbget/master/src/update-${NZBUP_BRANCH}.sh" >&3
+rm -vf "${logfolder}/update-${NZBUP_BRANCH}.sh"
+"${prog_dir}/libexec/wget" -O "${logfolder}/update-${NZBUP_BRANCH}.sh" "https://raw.githubusercontent.com/droboports/nzbget/master/src/update-${NZBUP_BRANCH}.sh"
 source "${logfolder}/update-${NZBUP_BRANCH}.sh"
 _autoupdate
