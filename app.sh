@@ -95,7 +95,7 @@ popd
 
 ### NZBGET ###
 _build_nzbget() {
-local VERSION="14.1"
+local VERSION="14.2"
 local FOLDER="nzbget-${VERSION}"
 local FILE="${FOLDER}.tar.gz"
 local URL="http://sourceforge.net/projects/nzbget/files/${FILE}"
@@ -122,6 +122,29 @@ sed -e "s|^MainDir=.*|MainDir=/mnt/DroboFS/Shares/Public/Downloads|g" \
 popd
 }
 
+### WGET ###
+_build_wget() {
+local VERSION="1.16.1"
+local FOLDER="wget-${VERSION}"
+local FILE="${FOLDER}.tar.xz"
+local URL="http://ftp.gnu.org/gnu/wget/${FILE}"
+
+_download_xz "${FILE}" "${URL}" "${FOLDER}"
+pushd "target/${FOLDER}"
+./configure --host="${HOST}" --prefix="${DEPS}" --bindir="${DEST}/libexec" --sysconfdir="${DEST}/etc" --with-ssl=openssl --disable-pcre
+make
+make install
+echo "ca_certificate = ${DEST}/etc/ssl/certs/ca-certificates.crt" >> "${DEST}/etc/wgetrc"
+popd
+}
+
+### CERTIFICATES ###
+_build_certificates() {
+# update CA certificates on a Debian/Ubuntu machine:
+#sudo update-ca-certificates
+cp -vf /etc/ssl/certs/ca-certificates.crt "${DEST}/etc/ssl/certs/"
+}
+
 _build() {
   _build_unrar
   _build_p7zip
@@ -130,5 +153,7 @@ _build() {
   _build_ncurses
   _build_libxml2
   _build_nzbget
+  _build_wget
+  _build_certificates
   _package
 }

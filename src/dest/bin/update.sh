@@ -1,10 +1,10 @@
 #!/usr/bin/env sh
 #
-# Nzbget install script
+# Nzbget update script
 
 prog_dir="$(dirname $(realpath ${0}))"
 name="$(basename ${prog_dir})"
-logfile="/tmp/DroboApps/${name}/install.log"
+logfile="/tmp/DroboApps/${name}/update.log"
 
 # script hardening
 set -o errexit  # exit on uncaught error code
