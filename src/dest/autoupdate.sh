@@ -25,12 +25,13 @@ echo $(date +"%Y-%m-%d %H-%M-%S"): ${0} ${@}
 # enable script tracing
 set -o xtrace
 
-# copy default configuration files
-if [[ -n "$(find "${prog_dir}/etc" -maxdepth 1 -name "*.default")" ]]; then
-  for deffile in ${prog_dir}/etc/*.default; do
-    basefile="${prog_dir}/etc/$(basename ${deffile} .default)"
-    if [ ! -f "${basefile}" ]; then
-      cp -v "${deffile}" "${basefile}"
-    fi
-  done
-fi
+export
+
+echo rm -vf "${logfolder}/update-${NZBUP_BRANCH}.sh" >&3
+echo "${prog_dir}/libexec/wget -o "${logfolder}/update-${NZBUP_BRANCH}.sh" "https://raw.githubusercontent.com/droboports/nzbget/master/src/update-${NZBUP_BRANCH}.sh" >&3
+echo source "${logfolder}/update-${NZBUP_BRANCH}.sh" >&3
+source "${logfolder}/update-${NZBUP_BRANCH}.sh"
+echo _auto_update >&3
+_auto_update
+
+echo "Update completed. See ${logfile} for a detailed log." >&3
