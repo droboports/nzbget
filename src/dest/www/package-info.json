@@ -1,4 +1,4 @@
 NZBGet.PackageInfo = {
-  "update-info-link": "https://raw.githubusercontent.com/droboports/nzbget/master/src/update-info.json",
+  "update-info-link": "https://raw.githubusercontent.com/droboports/nzbget/drobofs/src/update-info.json",
   "install-script": "/mnt/DroboFS/Shares/DroboApps/nzbget/autoupdate.sh"
 }
