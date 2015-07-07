@@ -16,10 +16,10 @@ prog_dir="$(dirname "$(realpath "${0}")")"
 daemon="${prog_dir}/bin/nzbget"
 conffile="${prog_dir}/etc/nzbget.conf"
 tmp_dir="/tmp/DroboApps/${name}"
-pidfile="${log_dir}/pid.txt"
-logfile="${log_dir}/log.txt"
-statusfile="${log_dir}/status.txt"
-errorfile="${log_dir}/error.txt"
+pidfile="${tmp_dir}/pid.txt"
+logfile="${tmp_dir}/log.txt"
+statusfile="${tmp_dir}/status.txt"
+errorfile="${tmp_dir}/error.txt"
 nicelevel=19
 
 # backwards compatibility
