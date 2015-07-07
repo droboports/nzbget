@@ -5,89 +5,55 @@
 # import DroboApps framework functions
 . /etc/service.subr
 
-# DroboApp framework version
-framework_version="2.0"
-
-# app description
+framework_version="2.1"
 name="nzbget"
-version="14.1"
+version="15.0"
 description="Usenet download manager"
+depends=""
+webui=":6789/"
 
-# framework-mandated variables
-pidfile="/tmp/DroboApps/${name}/pid.txt"
-logfile="/tmp/DroboApps/${name}/log.txt"
-statusfile="/tmp/DroboApps/${name}/status.txt"
-errorfile="/tmp/DroboApps/${name}/error.txt"
-
-# app-specific variables
-prog_dir=$(dirname $(readlink -fn ${0}))
+prog_dir="$(dirname "$(realpath "${0}")")"
 daemon="${prog_dir}/bin/nzbget"
 conffile="${prog_dir}/etc/nzbget.conf"
+tmp_dir="/tmp/DroboApps/${name}"
+pidfile="${log_dir}/pid.txt"
+logfile="${log_dir}/log.txt"
+statusfile="${log_dir}/status.txt"
+errorfile="${log_dir}/error.txt"
 nicelevel=19
 
-# script hardening
-set -o errexit  # exit on uncaught error code
-set -o nounset  # exit on unset variable
-set -o pipefail # propagate last error code on pipe
-
-# ensure log folder exists
-if ! grep -q ^tmpfs /proc/mounts; then mount -t tmpfs tmpfs /tmp; fi
-logfolder="$(dirname ${logfile})"
-if [[ ! -d "${logfolder}" ]]; then mkdir -p "${logfolder}"; fi
-
-# redirect all output to logfile
-exec 3>&1 1>> "${logfile}" 2>&1
-
-# log current date, time, and invocation parameters
-echo $(date +"%Y-%m-%d %H-%M-%S"): ${0} ${@}
-
-# enable script tracing
-set -o xtrace
-
-# _is_running
-# args: path to pid file
-# returns: 0 if pid is running, 1 if not running or if pidfile does not exist.
-_is_running() {
-  /sbin/start-stop-daemon -K -s 0 -x "${daemon}" -p "${pidfile}" -q
-}
+# backwards compatibility
+if [ -z "${FRAMEWORK_VERSION:-}" ]; then
+  framework_version="2.0"
+  . "${prog_dir}/libexec/service.subr"
+fi
 
 start() {
   "${daemon}" --configfile "${conffile}" --daemon
-  sleep 2
   renice "${nicelevel}" $(cat "${pidfile}")
 }
 
-_service_start() {
-  set +e
-  set +u
-  if _is_running "${pidfile}"; then
-    echo ${name} is already running >&3
-    return 1
-  fi
-  start_service
-  set -u
-  set -e
-}
-
-_service_stop() {
+stop() {
   "${daemon}" --configfile "${conffile}" --quit
 }
 
-_service_restart() {
+force_stop() {
+  /sbin/start-stop-daemon -K -s 9 -x "${daemon}" -p "${pidfile}" -v
+}
+
+reload() {
   "${daemon}" --configfile "${conffile}" --reload
 }
 
-_service_status() {
-  status >&3
-}
+# boilerplate
+if [ ! -d "${tmp_dir}" ]; then mkdir -p "${tmp_dir}"; fi
+exec 3>&1 4>&2 1>> "${logfile}" 2>&1
+STDOUT=">&3"
+STDERR=">&4"
+echo "$(date +"%Y-%m-%d %H-%M-%S"):" "${0}" "${@}"
+set -o errexit  # exit on uncaught error code
+set -o nounset  # exit on unset variable
+set -o pipefail # propagate last error code on pipe
+set -o xtrace   # enable script tracing
 
-_service_help() {
-  echo "Usage: $0 [start|stop|restart|status]" >&3
-  set +e
-  exit 1
-}
-
-case "${1:-}" in
-  start|stop|restart|status) _service_${1} ;;
-  *) _service_help ;;
-esac
+main "${@}"

@@ -1,25 +1,33 @@
 ### UNRAR ###
 _build_unrar() {
-local VERSION="5.1.7"
+local VERSION="5.2.7"
 local FOLDER="unrar"
-local FILE="unrar.tgz"
-local URL="https://github.com/droboports/unrar/releases/download/v${VERSION}/${FILE}"
+local FILE="unrarsrc-${VERSION}.tar.gz"
+local URL="http://www.rarlab.com/rar/${FILE}"
 
-_download_app "${FILE}" "${URL}" "${FOLDER}"
+_download_tgz "${FILE}" "${URL}" "${FOLDER}"
+pushd target/"${FOLDER}"
+mv makefile Makefile
+make CXX="${CXX}" CXXFLAGS="${CFLAGS} -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE" STRIP="${STRIP}" LDFLAGS="${LDFLAGS} -pthread"
+make install DESTDIR="${DEST}"
 mkdir -p "${DEST}/libexec"
-cp -v "target/${FOLDER}/bin"/* "${DEST}/libexec/"
+mv "${DEST}/bin/unrar" "${DEST}/libexec/"
+popd
 }
 
 ### P7ZIP ###
 _build_p7zip() {
-local VERSION="9.20.1"
-local FOLDER="p7zip"
-local FILE="p7zip.tgz"
-local URL="https://github.com/droboports/p7zip/releases/download/v${VERSION}/${FILE}"
+local VERSION="9.38.1"
+local FOLDER="p7zip_${VERSION}"
+local FILE="${FOLDER}_src_all.tar.bz2"
+local URL="http://sourceforge.net/projects/p7zip/files/p7zip/${VERSION}/${FILE}"
 
-_download_app "${FILE}" "${URL}" "${FOLDER}"
-mkdir -p "${DEST}/libexec"
-cp -v "target/${FOLDER}/bin"/* "${DEST}/libexec/"
+_download_bz2 "${FILE}" "${URL}" "${FOLDER}"
+pushd "target/${FOLDER}"
+cp makefile.linux_cross_arm makefile.linux
+make all3 CC="${CC} \$(ALLFLAGS)" CXX="${CXX} \$(ALLFLAGS)" OPTFLAGS="${CFLAGS}"
+make install DEST_HOME="${DEPS}" DEST_BIN="${DEST}/libexec" DEST_SHARE="${DEST}/lib/p7zip"
+popd
 }
 
 ### ZLIB ###
@@ -31,7 +39,7 @@ local URL="http://zlib.net/${FILE}"
 
 _download_tgz "${FILE}" "${URL}" "${FOLDER}"
 pushd "target/${FOLDER}"
-./configure --prefix="${DEPS}" --libdir="${DEST}/lib"
+./configure --prefix="${DEPS}" --libdir="${DEST}/lib" --shared
 make
 make install
 rm -v "${DEST}/lib/libz.a"
@@ -40,25 +48,42 @@ popd
 
 ### OPENSSL ###
 _build_openssl() {
-local OPENSSL_VERSION="1.0.2"
-local OPENSSL_FOLDER="openssl-${OPENSSL_VERSION}"
-local OPENSSL_FILE="${OPENSSL_FOLDER}.tar.gz"
-local OPENSSL_URL="http://www.openssl.org/source/${OPENSSL_FILE}"
+local VERSION="1.0.2c"
+local FOLDER="openssl-${VERSION}"
+local FILE="${FOLDER}.tar.gz"
+local URL="http://www.openssl.org/source/${FILE}"
 
-_download_tgz "${OPENSSL_FILE}" "${OPENSSL_URL}" "${OPENSSL_FOLDER}"
-pushd "target/${OPENSSL_FOLDER}"
-./Configure --prefix="${DEPS}" \
-  --openssldir="${DEST}/etc/ssl" \
-  --with-zlib-include="${DEPS}/include" \
-  --with-zlib-lib="${DEST}/lib" \
-  shared zlib-dynamic threads linux-armv4 -DL_ENDIAN ${CFLAGS} ${LDFLAGS}
+_download_tgz "${FILE}" "${URL}" "${FOLDER}"
+cp -vf "src/${FOLDER}-parallel-build.patch" "target/${FOLDER}/"
+pushd "target/${FOLDER}"
+patch -p1 -i "${FOLDER}-parallel-build.patch"
+./Configure --prefix="${DEPS}" --openssldir="${DEST}/etc/ssl" \
+  zlib-dynamic --with-zlib-include="${DEPS}/include" --with-zlib-lib="${DEPS}/lib" \
+  shared threads linux-armv4 -DL_ENDIAN ${CFLAGS} ${LDFLAGS} -Wa,--noexecstack -Wl,-z,noexecstack
 sed -i -e "s/-O3//g" Makefile
-make -j1
+make
 make install_sw
-cp -avR "${DEPS}/lib"/* "${DEST}/lib/"
+cp -vfaR "${DEPS}/lib"/* "${DEST}/lib/"
 rm -vfr "${DEPS}/lib"
 rm -vf "${DEST}/lib/libcrypto.a" "${DEST}/lib/libssl.a"
 sed -i -e "s|^exec_prefix=.*|exec_prefix=${DEST}|g" "${DEST}/lib/pkgconfig/openssl.pc"
+popd
+}
+
+### WGET ###
+_build_wget() {
+local VERSION="1.16.3"
+local FOLDER="wget-${VERSION}"
+local FILE="${FOLDER}.tar.xz"
+local URL="http://ftp.gnu.org/gnu/wget/${FILE}"
+
+_download_xz "${FILE}" "${URL}" "${FOLDER}"
+pushd "target/${FOLDER}"
+PKG_CONFIG_PATH="${DEST}/lib/pkgconfig" ./configure --host="${HOST}" --prefix="${DEPS}" --sysconfdir="${DEST}/etc" --bindir="${DEST}/libexec"  --with-ssl=openssl --with-openssl=yes --with-libssl-prefix="${DEST}" --disable-pcre
+make
+make install
+echo "ca_certificate = ${DEST}/etc/ssl/certs/ca-certificates.crt" >> "${DEST}/etc/wgetrc"
+mv -f "${DEST}/etc/wgetrc" "${DEST}/etc/wgetrc.default"
 popd
 }
 
@@ -95,10 +120,10 @@ popd
 
 ### NZBGET ###
 _build_nzbget() {
-local VERSION="14.2"
+local VERSION="15.0"
 local FOLDER="nzbget-${VERSION}"
 local FILE="${FOLDER}.tar.gz"
-local URL="http://sourceforge.net/projects/nzbget/files/${FILE}"
+local URL="http://sourceforge.net/projects/nzbget/files/nzbget-stable/${VERSION}/${FILE}"
 
 _download_tgz "${FILE}" "${URL}" "${FOLDER}"
 pushd "target/${FOLDER}"
@@ -122,27 +147,12 @@ sed -e "s|^MainDir=.*|MainDir=/mnt/DroboFS/Shares/Public/Downloads|g" \
 popd
 }
 
-### WGET ###
-_build_wget() {
-local VERSION="1.16.1"
-local FOLDER="wget-${VERSION}"
-local FILE="${FOLDER}.tar.xz"
-local URL="http://ftp.gnu.org/gnu/wget/${FILE}"
-
-_download_xz "${FILE}" "${URL}" "${FOLDER}"
-pushd "target/${FOLDER}"
-./configure --host="${HOST}" --prefix="${DEPS}" --bindir="${DEST}/libexec" --sysconfdir="${DEST}/etc" --with-ssl=openssl --disable-pcre
-make
-make install
-echo "ca_certificate = ${DEST}/etc/ssl/certs/ca-certificates.crt" >> "${DEST}/etc/wgetrc"
-popd
-}
-
 ### CERTIFICATES ###
 _build_certificates() {
 # update CA certificates on a Debian/Ubuntu machine:
 #sudo update-ca-certificates
 cp -vf /etc/ssl/certs/ca-certificates.crt "${DEST}/etc/ssl/certs/"
+#wget -O "${DEST}/etc/ssl/certs/ca-certificates.crt" "http://curl.haxx.se/ca/cacert.pem"
 }
 
 _build() {

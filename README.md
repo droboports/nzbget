@@ -16,6 +16,7 @@ Log in the VM, pick a temporary folder (e.g., `~/build`), and then do:
 git clone https://github.com/droboports/nzbget.git
 cd nzbget
 ./build.sh
+ls -la *.tgz
 ```
 
 Each invocation creates a log file with all the generated output.
@@ -31,16 +32,6 @@ Each invocation creates a log file with all the generated output.
 * ncurses: https://www.gnu.org/software/ncurses/
 * libxml2: http://xmlsoft.org/
 * nzbget: http://nzbget.net/
-
-## Help support the apps
-
-If you like the repositories, or are using any of the apps from this site, please consider becoming a patreon or making a donation to support our efforts.
-
-[![Patreon](http://www.patreon.com/images/logo_emblem.png)](http://www.patreon.com/Droboports)
-
-[![Paypal](https://www.paypal.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KYFBRYLKSGNKA)
-
-[![Flattr](https://api.flattr.com/button/flattr-badge-large.png)](http://flattr.com/thing/177640/DroboPorts)
 
 <sub>**Disclaimer**</sub>
 
