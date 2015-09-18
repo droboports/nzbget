@@ -1,6 +1,6 @@
 ### UNRAR ###
 _build_unrar() {
-local VERSION="5.2.7"
+local VERSION="5.3.4"
 local FOLDER="unrar"
 local FILE="unrarsrc-${VERSION}.tar.gz"
 local URL="http://www.rarlab.com/rar/${FILE}"
@@ -51,7 +51,7 @@ _build_openssl() {
 local VERSION="1.0.2d"
 local FOLDER="openssl-${VERSION}"
 local FILE="${FOLDER}.tar.gz"
-local URL="http://www.openssl.org/source/${FILE}"
+local URL="http://mirror.switch.ch/ftp/mirror/openssl/source/${FILE}"
 
 _download_tgz "${FILE}" "${URL}" "${FOLDER}"
 cp -vf "src/${FOLDER}-parallel-build.patch" "target/${FOLDER}/"
@@ -59,14 +59,18 @@ pushd "target/${FOLDER}"
 patch -p1 -i "${FOLDER}-parallel-build.patch"
 ./Configure --prefix="${DEPS}" --openssldir="${DEST}/etc/ssl" \
   zlib-dynamic --with-zlib-include="${DEPS}/include" --with-zlib-lib="${DEPS}/lib" \
-  shared threads linux-armv4 -DL_ENDIAN ${CFLAGS} ${LDFLAGS} -Wa,--noexecstack -Wl,-z,noexecstack
+  shared threads linux-armv4 -DL_ENDIAN ${CFLAGS} ${LDFLAGS} \
+  -Wa,--noexecstack -Wl,-z,noexecstack
 sed -i -e "s/-O3//g" Makefile
 make
 make install_sw
-cp -vfaR "${DEPS}/lib"/* "${DEST}/lib/"
-rm -vfr "${DEPS}/lib"
-rm -vf "${DEST}/lib/libcrypto.a" "${DEST}/lib/libssl.a"
-sed -i -e "s|^exec_prefix=.*|exec_prefix=${DEST}|g" "${DEST}/lib/pkgconfig/openssl.pc"
+cp -vfa "${DEPS}/lib/libssl.so"* "${DEST}/lib/"
+cp -vfa "${DEPS}/lib/libcrypto.so"* "${DEST}/lib/"
+cp -vfaR "${DEPS}/lib/engines" "${DEST}/lib/"
+cp -vfaR "${DEPS}/lib/pkgconfig" "${DEST}/lib/"
+rm -vf "${DEPS}/lib/libcrypto.a" "${DEPS}/lib/libssl.a"
+sed -e "s|^libdir=.*|libdir=${DEST}/lib|g" -i "${DEST}/lib/pkgconfig/libcrypto.pc"
+sed -e "s|^libdir=.*|libdir=${DEST}/lib|g" -i "${DEST}/lib/pkgconfig/libssl.pc"
 popd
 }
 
@@ -79,7 +83,11 @@ local URL="http://ftp.gnu.org/gnu/wget/${FILE}"
 
 _download_xz "${FILE}" "${URL}" "${FOLDER}"
 pushd "target/${FOLDER}"
-PKG_CONFIG_PATH="${DEST}/lib/pkgconfig" ./configure --host="${HOST}" --prefix="${DEPS}" --sysconfdir="${DEST}/etc" --bindir="${DEST}/libexec"  --with-ssl=openssl --with-openssl=yes --with-libssl-prefix="${DEST}" --disable-pcre
+PKG_CONFIG_PATH="${DEST}/lib/pkgconfig" \
+  ./configure --host="${HOST}" --prefix="${DEPS}" \
+  --sysconfdir="${DEST}/etc" --bindir="${DEST}/libexec" \
+  --with-ssl=openssl --with-openssl=yes --with-libssl-prefix="${DEST}" \
+  --disable-pcre
 make
 make install
 echo "ca_certificate = ${DEST}/etc/ssl/certs/ca-certificates.crt" >> "${DEST}/etc/wgetrc"
@@ -112,7 +120,9 @@ local URL="ftp://xmlsoft.org/libxml2/${FILE}"
 
 _download_tgz "${FILE}" "${URL}" "${FOLDER}"
 pushd "target/${FOLDER}"
-PKG_CONFIG_LIBDIR="${DEST}/lib/pkgconfig" ./configure --host="${HOST}" --prefix="${DEPS}" --libdir="${DEST}/lib" --without-python --disable-static LIBS="-lz"
+PKG_CONFIG_LIBDIR="${DEST}/lib/pkgconfig" \
+  ./configure --host="${HOST}" --prefix="${DEPS}" --libdir="${DEST}/lib" --disable-static \
+  --without-python LIBS="-lz"
 make
 make install
 popd
@@ -127,19 +137,23 @@ local URL="http://sourceforge.net/projects/nzbget/files/nzbget-stable/${VERSION}
 
 _download_tgz "${FILE}" "${URL}" "${FOLDER}"
 pushd "target/${FOLDER}"
-./configure --host="${HOST}" --prefix="${DEST}" --with-zlib-includes="${DEPS}/include" --with-zlib-libraries="${DEST}/lib" --with-tlslib=OpenSSL --with-openssl-includes="${DEPS}/include" --with-openssl-libraries="${DEST}/lib" --with-libcurses-includes="${DEPS}/include" --with-libcurses-libraries="${DEST}/lib" --with-libxml2-includes="${DEPS}/include/libxml2" --with-libxml2-libraries="${DEST}/lib"
+./configure --host="${HOST}" --prefix="${DEST}" \
+  --with-zlib-includes="${DEPS}/include" --with-zlib-libraries="${DEST}/lib" \
+  --with-tlslib=OpenSSL --with-openssl-includes="${DEPS}/include" --with-openssl-libraries="${DEST}/lib" \
+  --with-libcurses-includes="${DEPS}/include" --with-libcurses-libraries="${DEST}/lib" \
+  --with-libxml2-includes="${DEPS}/include/libxml2" --with-libxml2-libraries="${DEST}/lib"
 make
 make install
-mv -v "${DEST}/share/nzbget/webui" "${DEST}/www"
+mv -v "${DEST}/share/nzbget/webui" "${DEST}/app"
 mv -v "${DEST}/share/nzbget/nzbget.conf" "${DEST}/etc/nzbget.conf.default"
 sed -e "s|^MainDir=.*|MainDir=/mnt/DroboFS/Shares/Public/Downloads|g" \
     -e "s|^DestDir=.*|DestDir=\${MainDir}/complete|g" \
     -e "s|^InterDir=.*|InterDir=\${MainDir}/incomplete|g" \
     -e "s|^NzbDir=.*|NzbDir=\${MainDir}/watch|g" \
     -e "s|^LockFile=.*|LockFile=/tmp/DroboApps/nzbget/pid.txt|g" \
-    -e "s|^LogFile=.*|LogFile=/tmp/DroboApps/nzbget/log.txt|g" \
+    -e "s|^LogFile=.*|LogFile=/tmp/DroboApps/nzbget/nzbget.log|g" \
     -e "s|^ConfigTemplate=.*|ConfigTemplate=/mnt/DroboFS/Shares/DroboApps/nzbget/etc/nzbget.conf.default|g" \
-    -e "s|^WebDir=.*|WebDir=/mnt/DroboFS/Shares/DroboApps/nzbget/www|g" \
+    -e "s|^WebDir=.*|WebDir=/mnt/DroboFS/Shares/DroboApps/nzbget/app|g" \
     -e "s|^UMask=.*|UMask=0002|g" \
     -e "s|^UnrarCmd=.*|UnrarCmd=/mnt/DroboFS/Shares/DroboApps/nzbget/libexec/unrar|g" \
     -e "s|^SevenZipCmd=.*|SevenZipCmd=/mnt/DroboFS/Shares/DroboApps/nzbget/libexec/7z|g" \
@@ -152,7 +166,7 @@ _build_certificates() {
 # update CA certificates on a Debian/Ubuntu machine:
 #sudo update-ca-certificates
 cp -vf /etc/ssl/certs/ca-certificates.crt "${DEST}/etc/ssl/certs/"
-#wget -O "${DEST}/etc/ssl/certs/ca-certificates.crt" "http://curl.haxx.se/ca/cacert.pem"
+ln -vfs certs/ca-certificates.crt "${DEST}/etc/ssl/cert.pem"
 }
 
 _build() {

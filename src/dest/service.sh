@@ -7,10 +7,10 @@
 
 framework_version="2.1"
 name="nzbget"
-version="15.0"
-description="Usenet download manager"
+version="15.0-1"
+description="NZBGet is a usenet download manager"
 depends=""
-webui=":6789/"
+webui="WebUI"
 
 prog_dir="$(dirname "$(realpath "${0}")")"
 daemon="${prog_dir}/bin/nzbget"
@@ -53,7 +53,6 @@ STDERR=">&4"
 echo "$(date +"%Y-%m-%d %H-%M-%S"):" "${0}" "${@}"
 set -o errexit  # exit on uncaught error code
 set -o nounset  # exit on unset variable
-set -o pipefail # propagate last error code on pipe
 set -o xtrace   # enable script tracing
 
 main "${@}"
