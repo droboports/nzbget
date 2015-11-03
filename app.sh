@@ -130,10 +130,10 @@ popd
 
 ### NZBGET ###
 _build_nzbget() {
-local VERSION="15.0"
+local VERSION="16.3"
 local FOLDER="nzbget-${VERSION}"
-local FILE="${FOLDER}.tar.gz"
-local URL="http://sourceforge.net/projects/nzbget/files/nzbget-stable/${VERSION}/${FILE}"
+local FILE="${FOLDER}-src.tar.gz"
+local URL="https://github.com/nzbget/nzbget/releases/download/v${VERSION}/${FILE}"
 
 _download_tgz "${FILE}" "${URL}" "${FOLDER}"
 pushd "target/${FOLDER}"
