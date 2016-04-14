@@ -1,4 +1,4 @@
-<p>Changes since NZBGet 15.0:</p>
+<p>Changes since NZBGet 16.4:</p>
 <ol>
   <li>Added about page.</li>
 </ol>
