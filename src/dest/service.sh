@@ -7,7 +7,7 @@
 
 framework_version="2.1"
 name="nzbget"
-version="15.0-1"
+version="16.4-1"
 description="NZBGet is a usenet download manager"
 depends=""
 webui="WebUI"

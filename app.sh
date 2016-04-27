@@ -51,7 +51,7 @@ _build_openssl() {
 local VERSION="1.0.2d"
 local FOLDER="openssl-${VERSION}"
 local FILE="${FOLDER}.tar.gz"
-local URL="http://mirror.switch.ch/ftp/mirror/openssl/source/${FILE}"
+local URL="http://mirror.switch.ch/ftp/mirror/openssl/source/old/1.0.2/${FILE}"
 
 _download_tgz "${FILE}" "${URL}" "${FOLDER}"
 cp -vf "src/${FOLDER}-parallel-build.patch" "target/${FOLDER}/"
@@ -130,10 +130,10 @@ popd
 
 ### NZBGET ###
 _build_nzbget() {
-local VERSION="15.0"
+local VERSION="16.4"
 local FOLDER="nzbget-${VERSION}"
-local FILE="${FOLDER}.tar.gz"
-local URL="http://sourceforge.net/projects/nzbget/files/nzbget-stable/${VERSION}/${FILE}"
+local FILE="${FOLDER}-src.tar.gz"
+local URL="https://github.com/nzbget/nzbget/releases/download/v${VERSION}/${FILE}"
 
 _download_tgz "${FILE}" "${URL}" "${FOLDER}"
 pushd "target/${FOLDER}"

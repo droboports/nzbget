@@ -1,7 +1,7 @@
-<?php 
+<?php
 $app = "nzbget";
 $appname = "NZBGet";
-$appversion = "15.0-1";
+$appversion = "16.4-1";
 $appsite = "http://nzbget.net/";
 $apphelp = "http://nzbget.net/documentation";
 
